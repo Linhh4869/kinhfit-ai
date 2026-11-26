@@ -1,5 +1,5 @@
 import { FaceLandmarker, FilesetResolver } from 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/vision_bundle.mjs';
-import { FACE_SHAPES, FRAMES, FRAME_COLORS, UNDERTONES, EYE_COLOR_TIPS, SOURCES, SIZE_GUIDE } from './knowledge.js';
+import { FACE_SHAPES, FRAMES, FRAME_COLORS, UNDERTONES, EYE_COLOR_TIPS, SOURCES, SIZE_GUIDE, STYLE_TAGS, MATERIALS } from './knowledge.js';
 import {
   measureFrame, poseFrom, aggregate, classifyShape, recommendSize, frameDims, fitChecks,
   scoreFrame, reasonsFor, analyzeColors,
@@ -28,6 +28,8 @@ const state = {
   frameId: 'rectangle', colorId: null, sizeMode: 'auto', tint: 'clear',
   showGlasses: true, showMesh: false, showLines: false,
   snapshots: [], cycleTimer: null,
+  prefs: { styles: new Set(), material: 'any', need: 'daily' },
+  affinity: {}, catalogFilter: 'all',
 };
 
 const LINE_COLORS = { temple: '#4fc3f7', cheek: '#ffb74d', forehead: '#ba68c8', jaw: '#81c784', length: '#e57373', pd: '#fff176' };
@@ -278,15 +280,133 @@ function finishAnalysis(samples, colorSamples) {
   const size = recommendSize(measure);
   const colors = aggregateColors(colorSamples);
   state.analysis = { measure, shape, size, colors };
-  state.results = FRAMES.map((f) => scoreFrame(f, state.analysis)).sort((a, b) => b.total - a.total);
-  const best = state.results[0].frame;
-  selectFrame(best.id, bestColorFor(best));
+  state.results = FRAMES.map((f) => scoreFrame(f, state.analysis));
   $('#btnCycle').disabled = false;
   $('#btnScan').textContent = 'Phân tích lại';
+  switchTab('result');
+  aiPick(false);
+}
+
+// ---------- Gợi ý theo sở thích ----------
+const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+
+function featureKeys(f) {
+  return [`id:${f.id}`, `rim:${f.rim}`, `mat:${f.material}`, `ang:${f.traits.angular > 0.6 ? 'hi' : f.traits.angular < 0.3 ? 'lo' : 'mid'}`,
+    `shape:${f.shape}`, ...f.tags.map((t) => `tag:${t}`)];
+}
+
+function prefBonus(r) {
+  const f = r.frame, p = state.prefs;
+  let b = 0;
+  if (p.styles.size) b += f.tags.some((t) => p.styles.has(t)) ? 7 : -5;
+  if (p.material !== 'any') b += f.material === p.material || (f.material === 'mixed' && p.material !== 'rimless') ? 7 : -8;
+  if (p.need === 'progressive') b += r.dims.H >= 32 ? 3 : r.dims.H >= 30 ? 0 : -18;
+  if (p.need === 'sun') b += f.aspect >= 0.8 || f.widthScale > 1 ? 4 : -2;
+  for (const k of featureKeys(f)) b += state.affinity[k] || 0;
+  return clamp(b, -30, 18);
+}
+
+function prefReasons(r) {
+  const out = [];
+  const hit = r.frame.tags.filter((t) => state.prefs.styles.has(t));
+  if (hit.length) out.push(`Đúng phong cách bạn thích: ${hit.map((t) => STYLE_TAGS[t].toLowerCase()).join(', ')}.`);
+  if (state.prefs.material !== 'any' && r.bonus > 0) out.push(`Chất liệu ${MATERIALS[r.frame.material].toLowerCase()}.`);
+  if (state.prefs.need === 'progressive' && r.dims.H >= 30) out.push(`Cao tròng ${r.dims.H} mm — đủ cho tròng đa tròng.`);
+  if ((state.affinity[`id:${r.frame.id}`] || 0) > 0) out.push('Bạn đã thích gọng này.');
+  return out;
+}
+
+function rerank() {
+  for (const r of state.results) {
+    if (r.base == null) r.base = r.total;
+    r.bonus = prefBonus(r);
+    r.total = Math.round(clamp(r.base + r.bonus, 0, 100));
+  }
+  state.results.sort((a, b) => b.total - a.total);
+}
+
+// Chọn gọng phù hợp nhất (dáng mặt + độ vừa + sở thích) và đeo thử ngay.
+function aiPick(showcase) {
+  if (!state.analysis) { toast('Hãy bật camera và nhìn thẳng để AI phân tích khuôn mặt trước.'); return; }
+  stopCycle();
+  rerank();
+  state.userColor = false;
+  state.sizeMode = 'auto';
+  $$('#sizeSeg button').forEach((b) => b.classList.toggle('on', b.dataset.size === 'auto'));
+  if (state.prefs.need === 'sun') setTint('gradient');
+  const best = state.results[0];
+  selectFrame(best.frame.id, bestColorFor(best.frame));
   renderResults();
   renderCatalog();
   renderSwatches();
-  switchTab('result');
+  renderReco();
+  toast(`AI chọn cho bạn: ${best.frame.name} · ${currentColor().name} · ${best.total}/100`);
+  if (showcase) startCycle(3);
+}
+
+function feedback(like) {
+  const f = currentFrame();
+  if (!state.analysis) return;
+  for (const k of featureKeys(f)) state.affinity[k] = (state.affinity[k] || 0) + (k.startsWith('id:') ? (like ? 4 : -12) : like ? 1.5 : -1.5);
+  rerank();
+  renderResults(); renderCatalog(); renderReco();
+  if (like) { selectFrame(f.id); toast(`Đã ghi nhận bạn thích ${f.name} — gợi ý được sắp xếp lại theo gu của bạn.`); return; }
+  const next = state.results.find((r) => r.frame.id !== f.id);
+  selectFrame(next.frame.id, state.userColor ? undefined : bestColorFor(next.frame));
+  toast(`Đã bỏ qua ${f.name}. Thử gợi ý tiếp theo: ${next.frame.name}.`);
+}
+
+function setTint(t) {
+  state.tint = t;
+  $$('#tintSeg button').forEach((b) => b.classList.toggle('on', b.dataset.tint === t));
+}
+
+function renderReco() {
+  const box = $('#recoStrip');
+  if (!state.results.length) { box.hidden = true; return; }
+  box.hidden = false;
+  box.innerHTML = `<div class="reco-head">AI gợi ý cho bạn</div>${state.results.slice(0, 3).map((r, i) => `
+    <button class="reco-item ${r.frame.id === state.frameId ? 'on' : ''}" data-try="${r.frame.id}">
+      <canvas width="150" height="52" data-thumb="${r.frame.id}"></canvas>
+      <span><b>${i + 1}. ${r.frame.name}</b><i>${r.total}/100</i></span>
+    </button>`).join('')}`;
+  box.querySelectorAll('canvas[data-thumb]').forEach((cv) => {
+    const f = FRAMES.find((x) => x.id === cv.dataset.thumb);
+    drawThumb(cv, f, FRAME_COLORS.find((c) => c.id === bestColorFor(f)));
+  });
+}
+
+function aiBlockHtml() {
+  const best = state.results[0];
+  const A = state.analysis;
+  const why = [...prefReasons(best), ...reasonsFor(best, A)].slice(0, 4);
+  const chip = (attr, val, on, label) => `<button class="chip-btn ${on ? 'on' : ''}" ${attr}="${val}">${label}</button>`;
+  return `
+    <div class="ai-pick">
+      <div class="conf">AI gợi ý gọng phù hợp nhất</div>
+      <div class="ai-best">
+        <canvas width="300" height="104" data-thumb="${best.frame.id}"></canvas>
+        <div>
+          <div class="name">${best.frame.name} <span class="score ${scoreCls(best.total)}">${best.total}</span></div>
+          <p class="muted">${MATERIALS[best.frame.material]} · ${best.dims.A}□${best.dims.B}–${A.size.temple} · ${FRAME_COLORS.find((c) => c.id === bestColorFor(best.frame)).name}</p>
+          <ul>${why.map((x) => `<li>${x}</li>`).join('')}</ul>
+          <div class="row" style="justify-content:flex-start">
+            <button class="btn primary small" data-try="${best.frame.id}">Đeo thử</button>
+            <button class="btn small" data-showcase="1">Xem lần lượt Top 3</button>
+          </div>
+        </div>
+      </div>
+      <div class="prefs">
+        <h4>Phong cách bạn thích <span class="muted">(chọn nhiều)</span></h4>
+        <div class="chips">${Object.entries(STYLE_TAGS).map(([k, v]) => chip('data-pref-style', k, state.prefs.styles.has(k), v)).join('')}</div>
+        <h4>Chất liệu</h4>
+        <div class="chips">${chip('data-pref-mat', 'any', state.prefs.material === 'any', 'Bất kỳ')}${Object.entries(MATERIALS).filter(([k]) => k !== 'mixed').map(([k, v]) => chip('data-pref-mat', k, state.prefs.material === k, v)).join('')}</div>
+        <h4>Nhu cầu</h4>
+        <div class="chips">${[['daily', 'Đeo hằng ngày'], ['progressive', 'Tròng đa tròng'], ['sun', 'Kính râm']].map(([k, v]) => chip('data-pref-need', k, state.prefs.need === k, v)).join('')}</div>
+      </div>
+      <button class="btn primary" data-ai-pick="1" style="width:100%;justify-content:center;margin-top:12px">AI chọn giúp tôi</button>
+      <p class="muted" style="margin:8px 0 0">Mẹo: bấm <b>Thích / Bỏ qua</b> ở góc khung camera — AI học gu của bạn và xếp lại gợi ý.</p>
+    </div>`;
 }
 
 function undertone() {
@@ -361,7 +481,8 @@ function selectFrame(id, colorId) {
   const r = state.results.find((x) => x.frame.id === id);
   const nw = $('#nowWearing');
   nw.hidden = false;
-  nw.innerHTML = `Đang thử: <b>${f.name}</b> · ${c.name}${r ? ` · ${r.total}/100` : ''}`;
+  nw.innerHTML = `<span>Đang thử: <b>${f.name}</b> · ${c.name}${r ? ` · ${r.total}/100` : ''}</span>${state.analysis ? '<button data-fb="like" title="AI sẽ ưu tiên kiểu tương tự">👍 Thích</button><button data-fb="skip" title="Chuyển sang gợi ý khác">👎 Bỏ qua</button>' : ''}`;
+  $$('.reco-item').forEach((el) => el.classList.toggle('on', el.dataset.try === id));
   $$('.frame-card').forEach((el) => el.classList.toggle('on', el.dataset.id === id));
   $$('#swatches .sw').forEach((el) => el.classList.toggle('on', el.dataset.id === c.id));
   renderFitCheck();
@@ -374,9 +495,9 @@ function selectColor(id) {
   renderCatalog();
 }
 
-function startCycle() {
+function startCycle(n = 5) {
   stopCycle();
-  const top = state.results.slice(0, 5);
+  const top = state.results.slice(0, n);
   let i = 0;
   const step = () => {
     if (i >= top.length) { stopCycle(); return; }
@@ -425,6 +546,7 @@ function renderResults() {
   const avoid = state.results.slice(-3).reverse();
 
   $('#tab-result').innerHTML = `
+    ${aiBlockHtml()}
     <div class="shape-hero">
       <svg viewBox="0 0 70 84" fill="none" stroke="currentColor" stroke-width="2.5" style="color:var(--accent)">${SHAPE_ICONS[top.key]}</svg>
       <div>
@@ -517,7 +639,11 @@ function swatchHtml(c) {
 
 function renderCatalog() {
   const scores = Object.fromEntries(state.results.map((r) => [r.frame.id, r.total]));
-  const order = state.results.length ? state.results.map((r) => r.frame) : FRAMES;
+  const flt = state.catalogFilter;
+  const order = (state.results.length ? state.results.map((r) => r.frame) : FRAMES)
+    .filter((f) => flt === 'all' || f.material === flt || f.tags.includes(flt));
+  $('#catalogFilter').innerHTML = [['all', `Tất cả (${FRAMES.length})`], ...Object.entries(MATERIALS), ...Object.entries(STYLE_TAGS)]
+    .map(([k, v]) => `<button class="chip-btn ${flt === k ? 'on' : ''}" data-filter="${k}">${v}</button>`).join('');
   $('#catalog').innerHTML = order.map((f) => `
     <button class="frame-card ${f.id === state.frameId ? 'on' : ''}" data-id="${f.id}" title="${f.desc}">
       <canvas width="280" height="92"></canvas>
@@ -602,7 +728,8 @@ function renderLearn() {
       <li><b>Quy đổi pixel → mm</b> bằng đường kính mống mắt người ≈ 11,7 ± 0,5 mm (hầu như không đổi giữa người với người). Từ đó tính PD, bề ngang thái dương, gò má, trán, hàm và khoảng cách tới camera.</li>
       <li><b>Lấy trung vị ~36 khung hình</b> khi đầu nhìn thẳng (lệch &lt; 10°) để loại nhiễu.</li>
       <li><b>Phân loại dáng mặt</b> bằng 5 đặc trưng: tỷ lệ dài/rộng, hàm/gò má, trán/gò má, cằm/hàm, góc hàm — so với nguyên mẫu 7 dáng mặt, ra xác suất.</li>
-      <li><b>Chấm điểm 14 kiểu gọng</b> = 65% độ hợp dáng mặt (tổng hợp từ các hướng dẫn bên dưới) + 20% độ vừa vặn hình học (bề ngang, tâm đồng tử, lông mày, gò má) + 15% đặc điểm riêng (trán/hàm, độ dài mặt, góc hàm).</li>
+      <li><b>Chấm điểm ${FRAMES.length} kiểu gọng</b> = 65% độ hợp dáng mặt (tổng hợp từ các hướng dẫn bên dưới) + 20% độ vừa vặn hình học (bề ngang, tâm đồng tử, lông mày, gò má) + 15% đặc điểm riêng (trán/hàm, độ dài mặt, góc hàm).</li>
+      <li><b>Cá nhân hoá:</b> cộng/trừ điểm theo phong cách, chất liệu, nhu cầu bạn chọn và theo các lần bạn bấm Thích / Bỏ qua — AI học gu của bạn trong phiên.</li>
       <li><b>Tông da</b> ước tính từ màu da má/trán trong không gian CIELAB (góc màu h° và chỉ số ITA°); <b>màu mắt</b> từ vành mống mắt.</li>
     </ol>
     <h3>Gọng hợp từng dáng mặt</h3>
@@ -637,7 +764,14 @@ function renderLearn() {
 document.addEventListener('click', (e) => {
   const t = e.target.closest('button, [data-action]');
   if (!t) return;
-  if (t.dataset.action === 'camera') startCamera();
+  if (t.dataset.fb) feedback(t.dataset.fb === 'like');
+  else if (t.dataset.aiPick) aiPick(true);
+  else if (t.dataset.showcase) startCycle(3);
+  else if (t.dataset.prefStyle) { const s = state.prefs.styles, k = t.dataset.prefStyle; s.has(k) ? s.delete(k) : s.add(k); aiPick(false); }
+  else if (t.dataset.prefMat) { state.prefs.material = t.dataset.prefMat; aiPick(false); }
+  else if (t.dataset.prefNeed) { state.prefs.need = t.dataset.prefNeed; aiPick(false); }
+  else if (t.dataset.filter) { state.catalogFilter = t.dataset.filter; renderCatalog(); }
+  else if (t.dataset.action === 'camera') startCamera();
   else if (t.dataset.tab) switchTab(t.dataset.tab);
   else if (t.dataset.go) switchTab(t.dataset.go);
   else if (t.dataset.try) { stopCycle(); selectFrame(t.dataset.try, bestColorFor(FRAMES.find((f) => f.id === t.dataset.try))); renderSwatches(); }
@@ -649,8 +783,7 @@ document.addEventListener('click', (e) => {
     $$('#sizeSeg button').forEach((b) => b.classList.toggle('on', b === t));
     renderFitCheck();
   } else if (t.dataset.tint) {
-    state.tint = t.dataset.tint;
-    $$('#tintSeg button').forEach((b) => b.classList.toggle('on', b === t));
+    setTint(t.dataset.tint);
   } else if (t.dataset.tone) {
     state.undertoneOverride = t.dataset.tone === 'auto' ? null : t.dataset.tone;
     renderResults(); renderSwatches();

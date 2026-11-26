@@ -50,6 +50,7 @@
           <div><b id="scanPct">0%</b><span id="scanMsg">Giữ yên, nhìn thẳng…</span></div>
         </div>
         <div class="now-wearing" id="nowWearing" hidden></div>
+        <div class="reco" id="recoStrip" hidden></div>
       </div>
 
       <div class="toolbar">
@@ -82,11 +83,11 @@
       <div class="tab-body" id="tab-result">
         <div class="placeholder">
           <h3>Chưa có kết quả</h3>
-          <p>Bật camera hoặc tải ảnh. Ứng dụng sẽ tự quét ~2 giây khi bạn nhìn thẳng, sau đó:</p>
+          <p>Bật camera hoặc tải ảnh. Ứng dụng sẽ tự quét ~2 giây khi bạn nhìn thẳng, rồi <b>AI tự chọn và đeo thử gọng phù hợp nhất</b> cho bạn. Ngoài ra:</p>
           <ul>
             <li>Nhận diện <b>dáng mặt</b> (7 loại) bằng 478 điểm mốc AI</li>
             <li>Đo <b>PD, bề ngang thái dương, gò má, hàm</b> (mm) dùng mống mắt làm thước</li>
-            <li>Gợi ý <b>cỡ gọng</b> (tròng – cầu – càng) và chấm điểm <b>14 kiểu gọng</b></li>
+            <li>Gợi ý <b>cỡ gọng</b> (tròng – cầu – càng) và chấm điểm <b>26 kiểu gọng</b></li>
             <li>Phân tích <b>tông da &amp; màu mắt</b> để gợi ý màu gọng</li>
           </ul>
         </div>
@@ -94,6 +95,7 @@
 
       <div class="tab-body" id="tab-try" hidden>
         <div class="section-head"><h3>Kiểu gọng</h3><span class="muted" id="catalogHint">Điểm hiện sau khi phân tích</span></div>
+        <div class="chips" id="catalogFilter"></div>
         <div class="catalog" id="catalog"></div>
         <div class="section-head"><h3>Màu gọng</h3><span class="muted" id="colorHint"></span></div>
         <div class="swatches" id="swatches"></div>

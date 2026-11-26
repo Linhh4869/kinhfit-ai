@@ -149,7 +149,126 @@ export const FRAMES = [
     traits: { angular: 0.6, topHeavy: 0.7 },
     compat: { oval: 85, round: 75, square: 76, oblong: 64, heart: 48, diamond: 86, triangle: 94 },
   },
+  {
+    id: 'softsquare', name: 'Vuông bo tròn', en: 'Soft square', shape: 'softsquare', aspect: 0.8, widthScale: 1,
+    rim: 'full', thick: 2.6, bridge: 'saddle', defaultColor: 'tortoise',
+    desc: 'Vuông nhưng bo góc lớn — vừa có cấu trúc vừa mềm mại, rất dễ đeo.',
+    traits: { angular: 0.55, topHeavy: 0 },
+    compat: { oval: 88, round: 80, square: 58, oblong: 76, heart: 66, diamond: 66, triangle: 62 },
+  },
+  {
+    id: 'octagon', name: 'Bát giác', en: 'Octagon', shape: 'octagon', aspect: 0.86, widthScale: 0.98,
+    rim: 'metal', thick: 1.1, bridge: 'metal', defaultColor: 'gold',
+    desc: 'Tám cạnh kim loại mảnh — hiện đại, thêm góc cạnh nhẹ nhàng cho mặt tròn.',
+    traits: { angular: 0.8, topHeavy: 0 },
+    compat: { oval: 85, round: 86, square: 60, oblong: 66, heart: 70, diamond: 74, triangle: 64 },
+  },
+  {
+    id: 'butterfly', name: 'Cánh bướm', en: 'Butterfly', shape: 'butterfly', aspect: 0.84, widthScale: 1.08,
+    rim: 'full', thick: 3.0, bridge: 'saddle', defaultColor: 'burgundy',
+    desc: 'Tròng to, góc ngoài xoè rộng lên trên — nữ tính, nổi bật, mở rộng phần trên mặt.',
+    traits: { angular: 0.4, topHeavy: 0.8 },
+    compat: { oval: 80, round: 76, square: 76, oblong: 80, heart: 48, diamond: 86, triangle: 92 },
+  },
+  {
+    id: 'clubround', name: 'Clubround', en: 'Clubround', shape: 'round', aspect: 0.9, widthScale: 0.96,
+    rim: 'browline', thick: 4.0, bridge: 'metal', defaultColor: 'black',
+    desc: 'Tròng tròn với viền mày đậm — kết hợp nét cổ điển của browline và sự mềm của gọng tròn.',
+    traits: { angular: 0.2, topHeavy: 0.9 },
+    compat: { oval: 85, round: 58, square: 86, oblong: 70, heart: 45, diamond: 86, triangle: 92 },
+  },
+  {
+    id: 'roundwire', name: 'Tròn kim loại mảnh', en: 'Round wire', shape: 'round', aspect: 0.96, widthScale: 0.9,
+    rim: 'metal', thick: 0.9, bridge: 'metal', defaultColor: 'gold',
+    desc: 'Tròng tròn nhỏ, viền kim loại siêu mảnh phong cách vintage — nhẹ và tinh tế.',
+    traits: { angular: 0, topHeavy: 0 },
+    compat: { oval: 80, round: 25, square: 90, oblong: 68, heart: 80, diamond: 74, triangle: 55 },
+  },
+  {
+    id: 'navigator', name: 'Navigator', en: 'Navigator', shape: 'navigator', aspect: 0.84, widthScale: 1.04,
+    rim: 'metal', thick: 1.1, bridge: 'double', defaultColor: 'gunmetal',
+    desc: 'Phi công dáng vuông, cầu đôi — mạnh mẽ hơn aviator, thêm góc cạnh.',
+    traits: { angular: 0.6, topHeavy: -0.3 },
+    compat: { oval: 86, round: 80, square: 64, oblong: 78, heart: 80, diamond: 68, triangle: 60 },
+  },
+  {
+    id: 'metalrect', name: 'Chữ nhật titan', en: 'Titanium rectangle', shape: 'rectangle', aspect: 0.6, widthScale: 1,
+    rim: 'metal', thick: 1.0, bridge: 'metal', defaultColor: 'silver',
+    desc: 'Chữ nhật viền titan mảnh, siêu nhẹ — chuyên nghiệp, kín đáo.',
+    traits: { angular: 0.85, topHeavy: 0 },
+    compat: { oval: 85, round: 90, square: 40, oblong: 45, heart: 76, diamond: 66, triangle: 55 },
+  },
+  {
+    id: 'cateyemetal', name: 'Mắt mèo kim loại', en: 'Metal cat-eye', shape: 'cateye', aspect: 0.7, widthScale: 1,
+    rim: 'metal', thick: 1.0, bridge: 'metal', defaultColor: 'rosegold',
+    desc: 'Dáng mắt mèo với viền kim loại mảnh — nâng gò má nhưng nhẹ nhàng hơn bản nhựa.',
+    traits: { angular: 0.45, topHeavy: 0.5 },
+    compat: { oval: 86, round: 80, square: 72, oblong: 56, heart: 62, diamond: 92, triangle: 88 },
+  },
+  {
+    id: 'oversizedround', name: 'Tròn bản to', en: 'Oversized round', shape: 'round', aspect: 0.92, widthScale: 1.1,
+    rim: 'full', thick: 3.0, bridge: 'keyhole', defaultColor: 'crystal',
+    desc: 'Tròng tròn lớn, bản dày — trẻ trung, làm mềm hàm vuông, lấp chiều dài mặt.',
+    traits: { angular: 0, topHeavy: 0 },
+    compat: { oval: 56, round: 32, square: 86, oblong: 88, heart: 56, diamond: 60, triangle: 60 },
+  },
+  {
+    id: 'invertedhalf', name: 'Viền dưới (Inverted half-rim)', en: 'Inverted half-rim', shape: 'rectangle', aspect: 0.66, widthScale: 1,
+    rim: 'semiLow', thick: 2.6, bridge: 'metal', defaultColor: 'black',
+    desc: 'Viền đậm ở nửa dưới, cước phía trên — kéo điểm nhấn xuống, cân bằng trán rộng.',
+    traits: { angular: 0.6, topHeavy: -0.8 },
+    compat: { oval: 80, round: 62, square: 68, oblong: 70, heart: 88, diamond: 70, triangle: 40 },
+  },
+  {
+    id: 'rimlessoval', name: 'Không viền oval', en: 'Rimless oval', shape: 'oval', aspect: 0.7, widthScale: 1,
+    rim: 'rimless', thick: 0.5, bridge: 'metal', defaultColor: 'gold',
+    desc: 'Tròng oval khoan lỗ, không viền — gần như vô hình, làm mềm nét mặt góc cạnh.',
+    traits: { angular: 0.1, topHeavy: -0.2 },
+    compat: { oval: 85, round: 55, square: 86, oblong: 66, heart: 92, diamond: 88, triangle: 66 },
+  },
+  {
+    id: 'flattop', name: 'Đỉnh phẳng (Flat-top)', en: 'Flat-top', shape: 'flattop', aspect: 0.74, widthScale: 1.02,
+    rim: 'full', thick: 3.2, bridge: 'saddle', defaultColor: 'olive',
+    desc: 'Viền trên thẳng như đường mày, đáy thu nhỏ — mạnh mẽ, cá tính.',
+    traits: { angular: 0.8, topHeavy: 0.7 },
+    compat: { oval: 82, round: 76, square: 58, oblong: 80, heart: 52, diamond: 70, triangle: 82 },
+  },
 ];
+
+// Chất liệu và phong cách — dùng cho bộ lọc và gợi ý theo sở thích.
+export const STYLE_TAGS = {
+  office: 'Công sở', fashion: 'Thời trang', classic: 'Cổ điển', minimal: 'Tối giản', bold: 'Cá tính', youthful: 'Trẻ trung',
+};
+export const MATERIALS = { acetate: 'Nhựa acetate', metal: 'Kim loại', rimless: 'Không viền', mixed: 'Nhựa + kim loại' };
+const FRAME_META = {
+  rectangle: ['acetate', ['office', 'minimal']],
+  square: ['acetate', ['bold', 'fashion']],
+  wayfarer: ['acetate', ['classic', 'youthful']],
+  round: ['acetate', ['classic', 'youthful']],
+  oval: ['acetate', ['office', 'minimal']],
+  cateye: ['acetate', ['fashion', 'bold']],
+  aviator: ['metal', ['classic', 'bold']],
+  browline: ['mixed', ['classic', 'office']],
+  geometric: ['metal', ['fashion', 'bold']],
+  panto: ['acetate', ['classic', 'youthful']],
+  dframe: ['acetate', ['youthful', 'fashion']],
+  oversized: ['acetate', ['fashion', 'bold']],
+  rimless: ['rimless', ['minimal', 'office']],
+  semirimless: ['mixed', ['office', 'minimal']],
+  softsquare: ['acetate', ['youthful', 'office']],
+  octagon: ['metal', ['fashion', 'youthful']],
+  butterfly: ['acetate', ['fashion', 'bold']],
+  clubround: ['mixed', ['classic', 'fashion']],
+  roundwire: ['metal', ['classic', 'minimal']],
+  navigator: ['metal', ['bold', 'classic']],
+  metalrect: ['metal', ['office', 'minimal']],
+  cateyemetal: ['metal', ['fashion', 'office']],
+  oversizedround: ['acetate', ['youthful', 'fashion']],
+  invertedhalf: ['mixed', ['office', 'bold']],
+  rimlessoval: ['rimless', ['minimal', 'office']],
+  flattop: ['acetate', ['bold', 'fashion']],
+};
+for (const f of FRAMES) [f.material, f.tags] = FRAME_META[f.id];
 
 // tones: tông da hợp. kind: acetate | metal.
 export const FRAME_COLORS = [

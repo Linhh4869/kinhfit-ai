@@ -10,11 +10,16 @@ const SHAPES = {
   browline: { type: 'poly', pts: [[-1, -1], [1, -1], [1, 0.45], [0.72, 1], [-0.72, 1], [-1, 0.45]], corner: 5 },
   hexagon: { type: 'poly', pts: [[-0.52, -1], [0.52, -1], [1, 0], [0.52, 1], [-0.52, 1], [-1, 0]], corner: 1.5 },
   rimless: { type: 'poly', pts: [[-1, -0.95], [1, -1], [1, 0.9], [-1, 1]], corner: 7 },
+  softsquare: { type: 'poly', pts: [[-1, -1], [1, -1], [1, 1], [-1, 1]], corner: 9 },
+  octagon: { type: 'poly', pts: [[-0.55, -1], [0.55, -1], [1, -0.5], [1, 0.5], [0.55, 1], [-0.55, 1], [-1, 0.5], [-1, -0.5]], corner: 1.2 },
+  flattop: { type: 'poly', pts: [[-1, -1], [1.04, -1], [0.96, 0.5], [0.62, 1], [-0.62, 1], [-0.94, 0.55]], corner: 4 },
   round: { type: 'ellipse' },
   oval: { type: 'ellipse' },
   cateye: { type: 'smooth', pts: [[-0.95, -0.72], [-0.3, -0.95], [0.5, -1.0], [1.1, -1.18], [1.0, -0.35], [0.72, 0.55], [0.18, 0.98], [-0.5, 0.9], [-0.95, 0.35]] },
   aviator: { type: 'smooth', pts: [[-1, -0.82], [-0.2, -1], [0.7, -0.98], [1.02, -0.6], [0.95, 0.12], [0.6, 0.76], [0.0, 1.0], [-0.55, 0.86], [-0.92, 0.38]] },
   panto: { type: 'smooth', pts: [[-0.9, -0.88], [0, -1], [0.9, -0.88], [1.02, 0.1], [0.72, 0.8], [0, 1], [-0.72, 0.8], [-1.02, 0.1]] },
+  butterfly: { type: 'smooth', pts: [[-0.95, -0.82], [-0.2, -1], [0.6, -1.04], [1.12, -1.1], [1.08, -0.3], [0.8, 0.6], [0.25, 1], [-0.4, 0.95], [-0.9, 0.5], [-1.02, -0.2]] },
+  navigator: { type: 'smooth', pts: [[-1, -0.95], [0, -1.02], [1, -0.98], [1.05, -0.2], [0.86, 0.6], [0.35, 1], [-0.3, 0.98], [-0.8, 0.72], [-1.02, 0.1]] },
   dframe: { type: 'smooth', pts: [[-0.98, -1], [0, -1.03], [0.98, -1], [1.03, -0.25], [0.82, 0.62], [0.22, 1], [-0.42, 0.94], [-0.9, 0.5], [-1.03, -0.3]] },
 };
 
@@ -132,6 +137,13 @@ export function drawGlasses(ctx, T, frame, color, dims, tint = 'clear') {
       ctx.lineWidth = frame.rim === 'browline' ? 0.9 : 0.45; ctx.stroke();
       ctx.save();
       ctx.beginPath(); ctx.rect(s.cx - w, cy - h * 1.5, w * 2, h * (frame.rim === 'browline' ? 1.08 : 1.05)); ctx.clip();
+      lensPath(ctx, shape, s.cx, cy, w, h, s.o);
+      ctx.strokeStyle = main; ctx.lineWidth = thick; ctx.stroke();
+      ctx.restore();
+    } else if (frame.rim === 'semiLow') {
+      ctx.strokeStyle = 'rgba(230,235,240,0.6)'; ctx.lineWidth = 0.45; ctx.stroke();
+      ctx.save();
+      ctx.beginPath(); ctx.rect(s.cx - w, cy - h * 0.05, w * 2, h * 1.5); ctx.clip();
       lensPath(ctx, shape, s.cx, cy, w, h, s.o);
       ctx.strokeStyle = main; ctx.lineWidth = thick; ctx.stroke();
       ctx.restore();
