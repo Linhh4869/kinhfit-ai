@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>KínhFit AI</title>
+  <meta name="description" content="Đánh giá gọng kính hợp khuôn mặt bằng camera laptop — chạy cục bộ trong trình duyệt.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <svg viewBox="0 0 48 24" aria-hidden="true"><circle cx="11" cy="13" r="8.5"/><circle cx="37" cy="13" r="8.5"/><path d="M19.5 12q4.5-4 9 0M2.5 11 0 7M45.5 11 48 7"/></svg>
+      <div>
+        <h1>KínhFit AI</h1>
+        <p>Đánh giá gọng kính hợp khuôn mặt bằng camera — xử lý 100% trên máy bạn</p>
+      </div>
+    </div>
+    <div class="pill" id="modelStatus"><span class="dot"></span><span>Đang tải mô hình AI…</span></div>
+  </header>
+
+  <main class="layout">
+    <section class="stage-col">
+      <div class="stage" id="stage">
+        <video id="video" playsinline muted></video>
+        <canvas id="photo"></canvas>
+        <canvas id="overlay"></canvas>
+        <div class="guide" id="guide"></div>
+        <div class="stage-empty" id="stageEmpty">
+          <div class="empty-icon">
+            <svg viewBox="0 0 48 24" aria-hidden="true"><circle cx="11" cy="13" r="8.5"/><circle cx="37" cy="13" r="8.5"/><path d="M19.5 12q4.5-4 9 0"/></svg>
+          </div>
+          <h2>Bắt đầu thử kính</h2>
+          <p>Ngồi cách màn hình 40–60 cm, nhìn thẳng vào camera, đủ ánh sáng trước mặt, vén tóc khỏi trán và tháo kính đang đeo.</p>
+          <div class="row">
+            <button class="btn primary" data-action="camera">Bật camera</button>
+            <label class="btn">Tải ảnh chân dung<input type="file" accept="image/*" class="file-input" hidden></label>
+          </div>
+          <small>Không có hình ảnh nào được gửi lên máy chủ.</small>
+        </div>
+        <div class="hud" id="hud" hidden>
+          <span class="chip" id="hudDist">Khoảng cách —</span>
+          <span class="chip" id="hudPose">Góc đầu —</span>
+          <span class="chip" id="hudLight">Ánh sáng —</span>
+        </div>
+        <div class="scan" id="scanBox" hidden>
+          <svg viewBox="0 0 36 36"><circle class="track" cx="18" cy="18" r="15.9"/><circle class="bar" id="scanBar" cx="18" cy="18" r="15.9"/></svg>
+          <div><b id="scanPct">0%</b><span id="scanMsg">Giữ yên, nhìn thẳng…</span></div>
+        </div>
+        <div class="now-wearing" id="nowWearing" hidden></div>
+      </div>
+
+      <div class="toolbar">
+        <button class="btn" data-action="camera" id="btnCamera">Bật camera</button>
+        <label class="btn">Tải ảnh<input type="file" accept="image/*" class="file-input" hidden></label>
+        <button class="btn primary" id="btnScan" disabled>Phân tích khuôn mặt</button>
+        <button class="btn" id="btnSnap" disabled>Chụp để so sánh</button>
+        <button class="btn" id="btnCycle" disabled>Thử lần lượt Top 5</button>
+        <div class="toggles">
+          <label><input type="checkbox" id="tGlasses" checked> Kính</label>
+          <label><input type="checkbox" id="tMesh"> Lưới AI</label>
+          <label><input type="checkbox" id="tLines"> Đường đo</label>
+        </div>
+      </div>
+
+      <div class="card fit" id="fitCheck">
+        <h3>Kiểm tra độ vừa vặn</h3>
+        <p class="muted">Phân tích khuôn mặt để xem gọng đang thử có vừa bề ngang, tâm đồng tử, lông mày và gò má không.</p>
+      </div>
+    </section>
+
+    <aside class="panel">
+      <nav class="tabs" role="tablist">
+        <button class="tab active" data-tab="result">Kết quả</button>
+        <button class="tab" data-tab="try">Thử gọng</button>
+        <button class="tab" data-tab="compare">So sánh <span class="count" id="snapCount">0</span></button>
+        <button class="tab" data-tab="learn">Kiến thức</button>
+      </nav>
+
+      <div class="tab-body" id="tab-result">
+        <div class="placeholder">
+          <h3>Chưa có kết quả</h3>
+          <p>Bật camera hoặc tải ảnh. Ứng dụng sẽ tự quét ~2 giây khi bạn nhìn thẳng, sau đó:</p>
+          <ul>
+            <li>Nhận diện <b>dáng mặt</b> (7 loại) bằng 478 điểm mốc AI</li>
+            <li>Đo <b>PD, bề ngang thái dương, gò má, hàm</b> (mm) dùng mống mắt làm thước</li>
+            <li>Gợi ý <b>cỡ gọng</b> (tròng – cầu – càng) và chấm điểm <b>14 kiểu gọng</b></li>
+            <li>Phân tích <b>tông da &amp; màu mắt</b> để gợi ý màu gọng</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="tab-body" id="tab-try" hidden>
+        <div class="section-head"><h3>Kiểu gọng</h3><span class="muted" id="catalogHint">Điểm hiện sau khi phân tích</span></div>
+        <div class="catalog" id="catalog"></div>
+        <div class="section-head"><h3>Màu gọng</h3><span class="muted" id="colorHint"></span></div>
+        <div class="swatches" id="swatches"></div>
+        <div class="opts">
+          <div>
+            <h4>Cỡ</h4>
+            <div class="seg" id="sizeSeg">
+              <button data-size="auto" class="on">Tự động</button><button data-size="S">S</button><button data-size="M">M</button><button data-size="L">L</button>
+            </div>
+          </div>
+          <div>
+            <h4>Tròng</h4>
+            <div class="seg" id="tintSeg">
+              <button data-tint="clear" class="on">Trong</button><button data-tint="bluelight">Lọc xanh</button><button data-tint="gradient">Râm nhạt</button><button data-tint="sun">Râm</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-body" id="tab-compare" hidden>
+        <div class="section-head"><h3>Ảnh đã chụp</h3><button class="btn small" id="btnClearSnaps">Xoá tất cả</button></div>
+        <p class="muted">Bấm “Chụp để so sánh” khi đang đeo từng gọng để đặt cạnh nhau.</p>
+        <div class="snaps" id="snaps"></div>
+      </div>
+
+      <div class="tab-body" id="tab-learn" hidden></div>
+    </aside>
+  </main>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
