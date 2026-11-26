@@ -613,7 +613,7 @@ function renderLearn() {
       <li>Bề ngang thái dương &lt; 130 mm: mặt nhỏ · 130–145 mm: trung bình · &gt; 145 mm: lớn. Gọng nên rộng xấp xỉ mặt, không thừa quá một ngón tay mỗi bên.</li>
       <li>Cầu mũi nhỏ cho sống mũi hẹp, cầu lớn cho sống mũi rộng. Mũi thấp (thường gặp ở người châu Á) nên ưu tiên gọng có đệm mũi chỉnh được (Asian fit) để kính không trượt và không chạm má.</li>
       <li>Càng dài hơn cho gọng rộng (≥145 mm), gọng nhỏ dùng 135–140 mm.</li>
-      <li>Viền trên nên chạy theo đường lông mày; đáy tròng không chạm gò má khi cười; đồng tử nằm gần tâm tròng (hơi lệch vào trong là bình thường).</li>
+      <li>Viền trên nên chạy theo đường lông mày; đáy tròng không chạm gò má khi cười; theo chiều ngang, đồng tử nằm gần tâm tròng (hơi lệch vào trong là bình thường); theo chiều dọc, đồng tử nằm ở nửa trên tròng (~40% chiều cao tính từ viền trên).</li>
       <li>Tròng đa tròng (progressive) cần chiều cao tròng ≥ 30 mm.</li>
     </ul>
     <h3>Màu gọng</h3>

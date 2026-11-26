@@ -133,12 +133,16 @@ export function recommendSize(m) {
   const lens = Math.round(clamp((frameWidth - bridge - 2 * endpiece) / 2, SIZE_GUIDE.lensWidth[0], SIZE_GUIDE.lensWidth[1]));
   const temple = frameWidth <= 128 ? 135 : frameWidth <= 136 ? 140 : frameWidth <= 146 ? 145 : 150;
   const cls = SIZE_GUIDE.faceClasses.find((c) => frameWidth < c.max);
-  // Chiều cao tròng tối đa: từ dưới lông mày tới gò má, giữ khe hở ~2 mm mỗi phía.
-  const maxLensHeight = Math.round(clamp(m.browAboveMm + m.cheekBelowMm - 4, 26, 56));
+  // Chiều cao tròng tối đa khi đồng tử ở 40% từ trên: viền trên không vượt lông mày quá ~3 mm,
+  // đáy tròng không xuống quá gò má ~3 mm (gọng cách mặt ~12 mm nên vẫn chưa chạm).
+  const maxLensHeight = Math.round(clamp(Math.min(
+    (m.browAboveMm + 3) / PUPIL_FROM_TOP, (m.cheekBelowMm + 3) / (1 - PUPIL_FROM_TOP)), 26, 56));
   return { frameWidth, bridge, lens, temple, endpiece, sizeClass: cls, maxLensHeight };
 }
 
 export const SIZE_OFFSETS = { auto: 0, S: -3, M: 0, L: 3 };
+// Đồng tử nằm ở ~40% chiều cao tròng tính từ viền trên (nửa trên tròng) — cách đặt kính đẹp và chuẩn quang học.
+export const PUPIL_FROM_TOP = 0.4;
 
 export function frameDims(frame, size, sizeMode = 'auto') {
   const off = SIZE_OFFSETS[sizeMode];
@@ -149,7 +153,9 @@ export function frameDims(frame, size, sizeMode = 'auto') {
   const B = frame.bridge === 'keyhole' ? size.bridge + 1 : size.bridge;
   const H = Math.round(A * frame.aspect);
   const endpiece = clamp(Math.round((size.frameWidth + 2 * off - 2 * A - B) / 2), size.endpiece, 11);
-  return { A, B, H, vOff: -1.5, endpiece, total: 2 * A + B + 2 * endpiece };
+  // vOff > 0: tâm tròng nằm dưới đồng tử → đồng tử ở nửa trên tròng.
+  const vOff = Math.round(H * (0.5 - PUPIL_FROM_TOP) * 10) / 10;
+  return { A, B, H, vOff, endpiece, total: 2 * A + B + 2 * endpiece };
 }
 
 // Kiểm tra độ vừa vặn của một gọng với khuôn mặt (mm).
@@ -180,7 +186,7 @@ export function fitChecks(m, size, dims) {
 
   const bottomBelow = dims.H / 2 + dims.vOff;
   const cheekGap = m.cheekBelowMm - bottomBelow;
-  checks.push(cheekGap < 1
+  checks.push(cheekGap < -3
     ? { key: 'cheek', ok: false, label: 'Gò má', text: 'Đáy tròng sát gò má → có thể chạm má khi cười, để lại dấu.' }
     : { key: 'cheek', ok: true, label: 'Gò má', text: `Đáy tròng cách gò má ~${cheekGap.toFixed(0)} mm.` });
 
