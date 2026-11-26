@@ -69,16 +69,32 @@ function tortoisePattern(ctx) {
   return pat;
 }
 
+function paint(ctx, hex) {
+  return hex === 'tortoise' ? tortoisePattern(ctx) : hex;
+}
+
 function rimStyle(ctx, color) {
-  if (color.hex === 'tortoise') return tortoisePattern(ctx);
-  return color.hex;
+  return paint(ctx, color.hex);
 }
 
 function metalGradient(ctx, color, y0, y1) {
   if (color.kind !== 'metal') return color.hex === 'tortoise' ? '#8a5a2a' : color.hex;
+  const base = color.hex === 'tortoise' ? '#8a5a2a' : color.hex;
   const g = ctx.createLinearGradient(0, y0, 0, y1);
-  g.addColorStop(0, '#ffffff'); g.addColorStop(0.25, color.hex); g.addColorStop(0.6, color.hex); g.addColorStop(1, '#333');
+  g.addColorStop(0, '#ffffff'); g.addColorStop(0.25, base); g.addColorStop(0.6, base); g.addColorStop(1, '#333');
   return g;
+}
+
+// Gọng hai tông (VD "Đen trắng"): vẽ lại nửa dưới viền bằng màu thứ hai.
+function lowerTone(ctx, color, s, shape, cx, cy, w, h, lineWidth) {
+  if (!color.hex2) return;
+  ctx.save();
+  ctx.beginPath(); ctx.rect(cx - w, cy + h * 0.05, w * 2, h * 1.5); ctx.clip();
+  lensPath(ctx, shape, cx, cy, w, h, s.o);
+  ctx.strokeStyle = paint(ctx, color.hex2);
+  if (color.hex2 !== 'tortoise' && /^#(e|f|d)/i.test(color.hex2)) ctx.globalAlpha = 0.75; // tông trắng/trong
+  ctx.lineWidth = lineWidth; ctx.stroke();
+  ctx.restore();
 }
 
 const TINTS = {
@@ -135,9 +151,14 @@ export function drawGlasses(ctx, T, frame, color, dims, tint = 'clear') {
     use(s.T);
     lensPath(ctx, shape, s.cx, cy, w, h, s.o);
     if (frame.rim === 'full') {
+      ctx.save();
+      if (color.clear) ctx.globalAlpha = 0.6;
       ctx.strokeStyle = main; ctx.lineWidth = thick; ctx.stroke();
+      ctx.restore();
+      lowerTone(ctx, color, s, shape, s.cx, cy, w, h, thick);
     } else if (frame.rim === 'metal') {
       ctx.strokeStyle = metal; ctx.lineWidth = thick; ctx.stroke();
+      lowerTone(ctx, color, s, shape, s.cx, cy, w, h, thick);
     } else if (frame.rim === 'rimless') {
       ctx.strokeStyle = 'rgba(255,255,255,0.55)'; ctx.lineWidth = 0.35; ctx.stroke();
     } else if (frame.rim === 'browline' || frame.rim === 'semi') {
@@ -249,7 +270,8 @@ export function drawTemples(ctx, hinges, ears, color, pxPerMm) {
 export function drawThumb(canvas, frame, color) {
   const ctx = canvas.getContext('2d');
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  const dims = { A: 50, B: 18, H: Math.round(50 * frame.aspect), vOff: 0, endpiece: 6 };
+  const A = frame.A || 50, B = frame.B || 18;
+  const dims = { A, B, H: Math.round(A * frame.aspect), vOff: 0, endpiece: 6 };
   const total = 2 * dims.A + dims.B + 2 * dims.endpiece + 6;
   const s = canvas.width / total;
   drawGlasses(ctx, { a: s, b: 0, c: 0, d: s, e: canvas.width / 2, f: canvas.height / 2 }, frame, color, dims, 'clear');

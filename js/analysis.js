@@ -1,6 +1,6 @@
 // Đo đạc khuôn mặt từ 478 điểm MediaPipe Face Landmarker, phân loại khuôn mặt,
 // tính kích thước gọng và chấm điểm từng kiểu gọng.
-import { FACE_SHAPES, SHAPE_KEYS, FRAMES, SIZE_GUIDE } from './knowledge.js?v=mwxtgzsa';
+import { FACE_SHAPES, SHAPE_KEYS, SIZE_GUIDE } from './knowledge.js?v=mwxubh1n';
 
 export const IRIS_MM = 11.7; // đường kính mống mắt trung bình (±0.5 mm)
 const CAMERA_HFOV_DEG = 60;   // góc nhìn ngang ước tính của webcam laptop
@@ -140,19 +140,14 @@ export function recommendSize(m) {
   return { frameWidth, bridge, lens, temple, endpiece, sizeClass: cls, maxLensHeight };
 }
 
-export const SIZE_OFFSETS = { auto: 0, S: -3, M: 0, L: 3 };
 // Đồng tử nằm ở ~40% chiều cao tròng tính từ viền trên (nửa trên tròng) — cách đặt kính đẹp và chuẩn quang học.
 export const PUPIL_FROM_TOP = 0.4;
 
-export function frameDims(frame, size, sizeMode = 'auto') {
-  const off = SIZE_OFFSETS[sizeMode];
-  let A = Math.round(size.lens * frame.widthScale + off);
-  // Gọng tròng cao (tròn, panto…) thực tế dùng tròng hẹp hơn + endpiece dài hơn để vẫn đủ bề ngang.
-  const maxH = size.maxLensHeight + (frame.id === 'oversized' ? 8 : 3);
-  if (A * frame.aspect > maxH) A = Math.max(Math.round(maxH / frame.aspect), Math.round(A * 0.85));
-  const B = frame.bridge === 'keyhole' ? size.bridge + 1 : size.bridge;
+// Kích thước thật của gọng (tròng □ cầu – càng theo nhà sản xuất); chiều cao tròng ước theo dáng.
+export function frameDims(frame) {
+  const A = frame.A, B = frame.B;
   const H = Math.round(A * frame.aspect);
-  const endpiece = clamp(Math.round((size.frameWidth + 2 * off - 2 * A - B) / 2), size.endpiece, 11);
+  const endpiece = frame.rim === 'full' || frame.rim === 'browline' ? 7 : 6;
   // vOff > 0: tâm tròng nằm dưới đồng tử → đồng tử ở nửa trên tròng.
   const vOff = Math.round(H * (0.5 - PUPIL_FROM_TOP) * 10) / 10;
   return { A, B, H, vOff, endpiece, total: 2 * A + B + 2 * endpiece };
@@ -161,8 +156,9 @@ export function frameDims(frame, size, sizeMode = 'auto') {
 // Kiểm tra độ vừa vặn của một gọng với khuôn mặt (mm).
 export function fitChecks(m, size, dims) {
   const checks = [];
+  // Bề ngang đầu đo ở ngang tai rộng hơn mặt trước gọng vài mm (càng kính choãi ra), nên cho phép hẹp hơn tới 8 mm.
   const widthDiff = dims.total - m.templeMm;
-  checks.push(widthDiff < -5
+  checks.push(widthDiff < -8
     ? { key: 'width', ok: false, label: 'Bề ngang gọng', text: `Hẹp hơn thái dương ~${Math.abs(widthDiff).toFixed(0)} mm → càng kính có thể ép đầu, mặt trông to hơn.` }
     : widthDiff > 9
       ? { key: 'width', ok: false, label: 'Bề ngang gọng', text: `Rộng hơn thái dương ~${widthDiff.toFixed(0)} mm → dễ tuột, gọng lấn ra ngoài mặt.` }
@@ -200,9 +196,11 @@ export function fitChecks(m, size, dims) {
 export function scoreFrame(frame, analysis) {
   const { measure: m, shape, size } = analysis;
   const shapeScore = shape.probs.reduce((s, { key, p }) => s + p * frame.compat[key], 0);
-  const dims = frameDims(frame, size);
+  const dims = frameDims(frame);
   const checks = fitChecks(m, size, dims);
-  const fitScore = (checks.filter((c) => c.key !== 'prog' && c.ok).length / 4) * 100;
+  // Gọng có cỡ cố định nên độ vừa được tính nặng: bề ngang & tâm đồng tử quan trọng nhất.
+  const FIT_WEIGHT = { width: 40, pd: 30, brow: 15, cheek: 15 };
+  const fitScore = checks.reduce((s, c) => s + (c.ok ? FIT_WEIGHT[c.key] || 0 : 0), 0);
 
   // Thưởng/phạt theo đặc điểm cụ thể ngoài dáng mặt.
   const z = shape.z;
@@ -210,10 +208,9 @@ export function scoreFrame(frame, analysis) {
   feature += -frame.traits.topHeavy * (z.ratioForehead - z.ratioJaw) * 8; // trán rộng → nặng dưới; hàm rộng → nặng trên
   feature += (frame.aspect - 0.78) * z.ratioLW * 60;                    // mặt dài → tròng sâu
   feature += (frame.traits.angular - 0.5) * -z.jawAngle * 10;           // hàm tròn → gọng góc cạnh
-  if (frame.id === 'oversized' && m.templeMm < 132) feature -= 20;
   feature = clamp(feature, 0, 100);
 
-  const total = Math.round(0.65 * shapeScore + 0.2 * fitScore + 0.15 * feature);
+  const total = Math.round(0.5 * shapeScore + 0.35 * fitScore + 0.15 * feature);
   return { frame, total, shapeScore, fitScore, feature, dims, checks };
 }
 
@@ -229,6 +226,8 @@ export function reasonsFor(result, analysis) {
   if (result.frame.traits.topHeavy < -0.3 && z.ratioForehead - z.ratioJaw > 0.8) r.push('Phần dưới đầy giúp cân bằng vùng trán rộng.');
   if (result.frame.aspect >= 0.84 && z.ratioLW > 0.8) r.push('Tròng sâu làm mặt dài trông ngắn lại.');
   if (result.frame.aspect <= 0.66 && z.ratioLW > 0.8) r.push('Tròng dẹt có thể làm mặt trông dài hơn.');
+  const fits = (k) => result.checks.find((c) => c.key === k)?.ok;
+  if (fits('width') && fits('pd')) r.push(`Cỡ ${result.dims.A}□${result.dims.B}–${result.frame.temple} vừa bề ngang mặt và khoảng cách đồng tử của bạn.`);
   for (const ch of result.checks) if (ch.ok === false && ch.key !== 'prog') r.push(ch.text);
   return r;
 }
