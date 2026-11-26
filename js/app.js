@@ -1,10 +1,10 @@
 import { FaceLandmarker, FilesetResolver } from 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/vision_bundle.mjs';
-import { FACE_SHAPES, FRAMES, FRAME_COLORS, UNDERTONES, EYE_COLOR_TIPS, SOURCES, SIZE_GUIDE, STYLE_TAGS, MATERIALS } from './knowledge.js?v=mwxsv9ua';
+import { FACE_SHAPES, FRAMES, FRAME_COLORS, UNDERTONES, EYE_COLOR_TIPS, SOURCES, SIZE_GUIDE, STYLE_TAGS, MATERIALS, GENDERS, AGE_GROUPS, TREND_NOTES } from './knowledge.js?v=mwxtgzsa';
 import {
   measureFrame, poseFrom, aggregate, classifyShape, recommendSize, frameDims, fitChecks,
   scoreFrame, reasonsFor, analyzeColors,
-} from './analysis.js?v=mwxsv9ua';
-import { drawGlasses, drawTemples, drawThumb } from './render.js?v=mwxsv9ua';
+} from './analysis.js?v=mwxtgzsa';
+import { drawGlasses, drawTemples, drawThumb } from './render.js?v=mwxtgzsa';
 
 const WASM = 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm';
 const MODEL = 'https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task';
@@ -28,7 +28,7 @@ const state = {
   frameId: 'rectangle', colorId: null, sizeMode: 'auto', tint: 'clear',
   showGlasses: true, showMesh: false, showLines: false,
   snapshots: [], cycleTimer: null,
-  prefs: { styles: new Set(), material: 'any', need: 'daily' },
+  prefs: { styles: new Set(), material: 'any', need: 'daily', gender: 'any', age: 'any' },
   affinity: {}, catalogFilter: 'all',
 };
 
@@ -302,8 +302,22 @@ function prefBonus(r) {
   if (p.material !== 'any') b += f.material === p.material || (f.material === 'mixed' && p.material !== 'rimless') ? 7 : -8;
   if (p.need === 'progressive') b += r.dims.H >= 32 ? 3 : r.dims.H >= 30 ? 0 : -18;
   if (p.need === 'sun') b += f.aspect >= 0.8 || f.widthScale > 1 ? 4 : -2;
+  // Độ ưa chuộng theo giới tính / độ tuổi người dùng chọn (0–3 → −6…+6 và −7,5…+7,5).
+  if (p.gender !== 'any') b += (f.pop[p.gender] - 1.5) * 4;
+  if (p.age !== 'any') b += (f.pop[p.age] - 1.5) * 5;
+  if (p.age === 'kid' && f.pop.kid < 2) b -= 15;
+  if (p.age !== 'kid' && f.id === 'kidsflex') b -= 20;
   for (const k of featureKeys(f)) b += state.affinity[k] || 0;
-  return clamp(b, -30, 18);
+  return clamp(b, -40, 22);
+}
+
+function audienceText(f) {
+  const who = [];
+  if (f.pop.female >= 3 && f.pop.male <= 1) who.push('nữ');
+  else if (f.pop.male >= 3 && f.pop.female <= 1) who.push('nam');
+  const ages = Object.keys(AGE_GROUPS).filter((a) => f.pop[a] >= 3).map((a) => AGE_GROUPS[a].replace(' tuổi', ''));
+  if (ages.length) who.push(ages.join(', '));
+  return who.join(' · ');
 }
 
 function prefReasons(r) {
@@ -312,6 +326,10 @@ function prefReasons(r) {
   if (hit.length) out.push(`Đúng phong cách bạn thích: ${hit.map((t) => STYLE_TAGS[t].toLowerCase()).join(', ')}.`);
   if (state.prefs.material !== 'any' && r.bonus > 0) out.push(`Chất liệu ${MATERIALS[r.frame.material].toLowerCase()}.`);
   if (state.prefs.need === 'progressive' && r.dims.H >= 30) out.push(`Cao tròng ${r.dims.H} mm — đủ cho tròng đa tròng.`);
+  const p = state.prefs, f = r.frame;
+  const group = [p.gender !== 'any' && f.pop[p.gender] >= 2 ? GENDERS[p.gender].toLowerCase() : null,
+    p.age !== 'any' && f.pop[p.age] >= 2 ? AGE_GROUPS[p.age] : null].filter(Boolean);
+  if (group.length) out.push(`Được ưa chuộng ở nhóm ${group.join(', ')}.`);
   if ((state.affinity[`id:${r.frame.id}`] || 0) > 0) out.push('Bạn đã thích gọng này.');
   return out;
 }
@@ -401,6 +419,10 @@ function aiBlockHtml() {
         <div class="chips">${Object.entries(STYLE_TAGS).map(([k, v]) => chip('data-pref-style', k, state.prefs.styles.has(k), v)).join('')}</div>
         <h4>Chất liệu</h4>
         <div class="chips">${chip('data-pref-mat', 'any', state.prefs.material === 'any', 'Bất kỳ')}${Object.entries(MATERIALS).filter(([k]) => k !== 'mixed').map(([k, v]) => chip('data-pref-mat', k, state.prefs.material === k, v)).join('')}</div>
+        <h4>Giới tính</h4>
+        <div class="chips">${chip('data-pref-gender', 'any', state.prefs.gender === 'any', 'Bất kỳ')}${Object.entries(GENDERS).map(([k, v]) => chip('data-pref-gender', k, state.prefs.gender === k, v)).join('')}</div>
+        <h4>Độ tuổi</h4>
+        <div class="chips">${chip('data-pref-age', 'any', state.prefs.age === 'any', 'Bất kỳ')}${Object.entries(AGE_GROUPS).map(([k, v]) => chip('data-pref-age', k, state.prefs.age === k, v)).join('')}</div>
         <h4>Nhu cầu</h4>
         <div class="chips">${[['daily', 'Đeo hằng ngày'], ['progressive', 'Tròng đa tròng'], ['sun', 'Kính râm']].map(([k, v]) => chip('data-pref-need', k, state.prefs.need === k, v)).join('')}</div>
       </div>
@@ -647,13 +669,14 @@ function renderCatalog() {
   const scores = Object.fromEntries(state.results.map((r) => [r.frame.id, r.total]));
   const flt = state.catalogFilter;
   const order = (state.results.length ? state.results.map((r) => r.frame) : FRAMES)
-    .filter((f) => flt === 'all' || f.material === flt || f.tags.includes(flt));
-  $('#catalogFilter').innerHTML = [['all', `Tất cả (${FRAMES.length})`], ...Object.entries(MATERIALS), ...Object.entries(STYLE_TAGS)]
+    .filter((f) => flt === 'all' || f.material === flt || f.tags.includes(flt) || f.pop[flt] >= 2);
+  $('#catalogFilter').innerHTML = [['all', `Tất cả (${FRAMES.length})`], ...Object.entries(MATERIALS), ...Object.entries(STYLE_TAGS), ...Object.entries(GENDERS).map(([k, v]) => [k, `${v} ưa chuộng`]), ...Object.entries(AGE_GROUPS)]
     .map(([k, v]) => `<button class="chip-btn ${flt === k ? 'on' : ''}" data-filter="${k}">${v}</button>`).join('');
   $('#catalog').innerHTML = order.map((f) => `
     <button class="frame-card ${f.id === state.frameId ? 'on' : ''}" data-id="${f.id}" title="${f.desc}">
       <canvas width="280" height="92"></canvas>
       <div class="n">${f.name}</div>
+      ${audienceText(f) ? `<div class="aud">${audienceText(f)}</div>` : ""}
       ${scores[f.id] != null ? `<span class="score ${scoreCls(scores[f.id])}">${scores[f.id]}</span>` : ''}
     </button>`).join('');
   $('#catalogHint').textContent = state.results.length ? 'Sắp xếp theo điểm hợp với bạn' : 'Điểm hiện sau khi phân tích';
@@ -738,6 +761,13 @@ function renderLearn() {
       <li><b>Cá nhân hoá:</b> cộng/trừ điểm theo phong cách, chất liệu, nhu cầu bạn chọn và theo các lần bạn bấm Thích / Bỏ qua — AI học gu của bạn trong phiên.</li>
       <li><b>Tông da</b> ước tính từ màu da má/trán trong không gian CIELAB (góc màu h° và chỉ số ITA°); <b>màu mắt</b> từ vành mống mắt.</li>
     </ol>
+    <h3>Xu hướng theo giới tính &amp; độ tuổi</h3>
+    <p class="muted">Tổng hợp định tính từ các cửa hàng kính phổ biến ở Hà Nội (Việt Tín, Eye Plus, Hibou, G-shop, Anna, Lily…), báo cáo xu hướng 2026 và khảo sát người đeo kính — không phải số liệu doanh số.</p>
+    <table><thead><tr><th>Nhóm</th><th>Xu hướng</th><th>Gọng phổ biến nhất</th></tr></thead><tbody>${TREND_NOTES.map((n) => {
+      const key = Object.keys(AGE_GROUPS).find((k) => AGE_GROUPS[k].startsWith(n.group.split(' ')[0])) || Object.keys(GENDERS).find((k) => GENDERS[k] === n.group);
+      const top = key ? FRAMES.filter((f) => f.pop[key] >= 3).map((f) => f.name).join(', ') : '';
+      return `<tr><td><b>${n.group}</b></td><td>${n.text}</td><td>${top}</td></tr>`;
+    }).join('')}</tbody></table>
     <h3>Gọng hợp từng dáng mặt</h3>
     <table><thead><tr><th>Dáng mặt</th><th>Nên chọn</th><th>Nên tránh</th></tr></thead><tbody>${shapeRows}</tbody></table>
     <h3>Đọc &amp; chọn cỡ gọng</h3>
@@ -775,6 +805,8 @@ document.addEventListener('click', (e) => {
   else if (t.dataset.showcase) startCycle(3);
   else if (t.dataset.prefStyle) { const s = state.prefs.styles, k = t.dataset.prefStyle; s.has(k) ? s.delete(k) : s.add(k); aiPick(false); }
   else if (t.dataset.prefMat) { state.prefs.material = t.dataset.prefMat; aiPick(false); }
+  else if (t.dataset.prefGender) { state.prefs.gender = t.dataset.prefGender; aiPick(false); }
+  else if (t.dataset.prefAge) { state.prefs.age = t.dataset.prefAge; aiPick(false); }
   else if (t.dataset.prefNeed) { state.prefs.need = t.dataset.prefNeed; aiPick(false); }
   else if (t.dataset.filter) { state.catalogFilter = t.dataset.filter; renderCatalog(); }
   else if (t.dataset.action === 'camera') startCamera();

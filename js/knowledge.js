@@ -233,11 +233,96 @@ export const FRAMES = [
     traits: { angular: 0.8, topHeavy: 0.7 },
     compat: { oval: 82, round: 76, square: 58, oblong: 80, heart: 52, diamond: 70, triangle: 82 },
   },
+  // --- Bổ sung theo khảo sát cửa hàng Hà Nội & xu hướng 2026 ---
+  {
+    id: 'pentagon', name: 'Ngũ giác', en: 'Pentagon', shape: 'pentagon', aspect: 0.8, widthScale: 1,
+    rim: 'metal', thick: 1.0, bridge: 'metal', defaultColor: 'gold',
+    desc: 'Ngũ giác kim loại mảnh, đỉnh phẳng — kiểu “hot trend” của các nhà mốt, rất được Gen Z ưa chuộng.',
+    traits: { angular: 0.9, topHeavy: 0.3 },
+    compat: { oval: 82, round: 86, square: 55, oblong: 62, heart: 68, diamond: 70, triangle: 72 },
+  },
+  {
+    id: 'koreanclear', name: 'Tròn vuông Hàn Quốc', en: 'Korean soft square', shape: 'softsquare', aspect: 0.88, widthScale: 1,
+    rim: 'full', thick: 2.4, bridge: 'keyhole', defaultColor: 'crystal',
+    desc: 'Dáng tròn-vuông mềm, nhựa trong suốt hoặc màu nhạt — phong cách Hàn Quốc phổ biến ở các shop kính Hà Nội.',
+    traits: { angular: 0.4, topHeavy: 0 },
+    compat: { oval: 86, round: 70, square: 74, oblong: 76, heart: 70, diamond: 70, triangle: 64 },
+  },
+  {
+    id: 'slimoval90s', name: 'Oval mảnh thập niên 90', en: '90s slim oval', shape: 'oval', aspect: 0.55, widthScale: 0.98,
+    rim: 'full', thick: 1.8, bridge: 'saddle', defaultColor: 'black',
+    desc: 'Oval hẹp, viền mảnh kiểu thập niên 90 — tối giản, “quiet luxury”.',
+    traits: { angular: 0.1, topHeavy: 0 },
+    compat: { oval: 80, round: 55, square: 86, oblong: 42, heart: 76, diamond: 82, triangle: 60 },
+  },
+  {
+    id: 'narrowrect90s', name: 'Chữ nhật hẹp Y2K', en: 'Y2K narrow rectangle', shape: 'rectangle', aspect: 0.5, widthScale: 0.98,
+    rim: 'full', thick: 2.0, bridge: 'saddle', defaultColor: 'black',
+    desc: 'Chữ nhật nhỏ, hẹp kiểu thập niên 90–2000 đang quay lại — năng động, cá tính.',
+    traits: { angular: 0.9, topHeavy: 0 },
+    compat: { oval: 82, round: 86, square: 40, oblong: 35, heart: 62, diamond: 58, triangle: 50 },
+  },
+  {
+    id: 'oversizedrect', name: 'Chữ nhật bản to', en: 'Oversized rectangle', shape: 'rectangle', aspect: 0.72, widthScale: 1.12,
+    rim: 'full', thick: 3.2, bridge: 'saddle', defaultColor: 'tortoise',
+    desc: '“Power shape” của 2026: chữ nhật rộng, chiều cao vừa phải, bản acetate dày.',
+    traits: { angular: 0.8, topHeavy: 0 },
+    compat: { oval: 58, round: 82, square: 50, oblong: 86, heart: 58, diamond: 62, triangle: 62 },
+  },
+  {
+    id: 'softcateye', name: 'Mắt mèo mềm', en: 'Soft cat-eye', shape: 'softcateye', aspect: 0.74, widthScale: 1,
+    rim: 'full', thick: 2.6, bridge: 'saddle', defaultColor: 'tortoise',
+    desc: 'Mắt mèo vểnh nhẹ, dễ đeo hằng ngày và đi làm — nữ tính mà không quá phô.',
+    traits: { angular: 0.4, topHeavy: 0.6 },
+    compat: { oval: 88, round: 82, square: 78, oblong: 60, heart: 58, diamond: 92, triangle: 90 },
+  },
+  {
+    id: 'chunkysquare', name: 'Vuông bản dày (Chunky)', en: 'Chunky square', shape: 'softsquare', aspect: 0.82, widthScale: 1.04,
+    rim: 'full', thick: 4.4, bridge: 'saddle', defaultColor: 'black',
+    desc: 'Acetate dày bản, góc bo — phong cách thời trang Hàn, nổi bật và cá tính.',
+    traits: { angular: 0.7, topHeavy: 0.1 },
+    compat: { oval: 80, round: 84, square: 40, oblong: 78, heart: 55, diamond: 55, triangle: 52 },
+  },
+  {
+    id: 'titaniumprogressive', name: 'Nửa viền titan bản sâu', en: 'Deep titanium half-rim', shape: 'rectangle', aspect: 0.72, widthScale: 1,
+    rim: 'semi', thick: 1.8, bridge: 'metal', defaultColor: 'gunmetal',
+    desc: 'Titan siêu nhẹ, nửa viền trên, tròng đủ cao cho kính đa tròng/kính lão — lịch sự, bền.',
+    traits: { angular: 0.7, topHeavy: 0.5 },
+    compat: { oval: 85, round: 78, square: 74, oblong: 70, heart: 55, diamond: 84, triangle: 92 },
+  },
+  {
+    id: 'kidsflex', name: 'Dẻo TR90 trẻ em', en: 'Kids flexible TR90', shape: 'panto', aspect: 0.86, widthScale: 1,
+    rim: 'full', thick: 2.8, bridge: 'keyhole', defaultColor: 'navy',
+    desc: 'Nhựa dẻo TR90/silicone, không vít, khó gãy, nhiều màu — dành cho trẻ em.',
+    traits: { angular: 0.3, topHeavy: 0 },
+    compat: { oval: 80, round: 72, square: 78, oblong: 74, heart: 74, diamond: 72, triangle: 70 },
+  },
+  {
+    id: 'slimaviator', name: 'Phi công mảnh', en: 'Slim aviator', shape: 'aviator', aspect: 0.8, widthScale: 1,
+    rim: 'metal', thick: 0.8, bridge: 'double', defaultColor: 'gold',
+    desc: 'Aviator phiên bản 2026: viền mảnh, nhẹ hơn, tròng thấp hơn — hợp đeo cận hằng ngày.',
+    traits: { angular: 0.2, topHeavy: -0.5 },
+    compat: { oval: 86, round: 70, square: 82, oblong: 74, heart: 90, diamond: 70, triangle: 58 },
+  },
+  {
+    id: 'retrooval', name: 'Oval retro bản dày', en: 'Retro oval', shape: 'oval', aspect: 0.78, widthScale: 1,
+    rim: 'full', thick: 3.0, bridge: 'saddle', defaultColor: 'brown',
+    desc: 'Oval acetate dày kiểu retro — ấm áp, trí thức, hợp nhiều độ tuổi.',
+    traits: { angular: 0.1, topHeavy: 0 },
+    compat: { oval: 82, round: 45, square: 90, oblong: 76, heart: 74, diamond: 88, triangle: 66 },
+  },
+  {
+    id: 'sportywrap', name: 'Thể thao ôm mặt', en: 'Sporty wrap', shape: 'wrap', aspect: 0.58, widthScale: 1.06,
+    rim: 'full', thick: 2.8, bridge: 'saddle', defaultColor: 'black',
+    desc: 'Dáng ôm sát mặt, nhựa dẻo — năng động, chơi thể thao, đi xe máy.',
+    traits: { angular: 0.8, topHeavy: 0.2 },
+    compat: { oval: 80, round: 80, square: 50, oblong: 55, heart: 62, diamond: 62, triangle: 58 },
+  },
 ];
 
 // Chất liệu và phong cách — dùng cho bộ lọc và gợi ý theo sở thích.
 export const STYLE_TAGS = {
-  office: 'Công sở', fashion: 'Thời trang', classic: 'Cổ điển', minimal: 'Tối giản', bold: 'Cá tính', youthful: 'Trẻ trung',
+  office: 'Công sở', fashion: 'Thời trang', classic: 'Cổ điển', minimal: 'Tối giản', bold: 'Cá tính', youthful: 'Trẻ trung', sport: 'Thể thao',
 };
 export const MATERIALS = { acetate: 'Nhựa acetate', metal: 'Kim loại', rimless: 'Không viền', mixed: 'Nhựa + kim loại' };
 const FRAME_META = {
@@ -267,8 +352,83 @@ const FRAME_META = {
   invertedhalf: ['mixed', ['office', 'bold']],
   rimlessoval: ['rimless', ['minimal', 'office']],
   flattop: ['acetate', ['bold', 'fashion']],
+  pentagon: ['metal', ['fashion', 'bold']],
+  koreanclear: ['acetate', ['youthful', 'minimal']],
+  slimoval90s: ['acetate', ['fashion', 'minimal']],
+  narrowrect90s: ['acetate', ['fashion', 'youthful']],
+  oversizedrect: ['acetate', ['fashion', 'bold']],
+  softcateye: ['acetate', ['fashion', 'office']],
+  chunkysquare: ['acetate', ['bold', 'fashion']],
+  titaniumprogressive: ['metal', ['office', 'classic']],
+  kidsflex: ['acetate', ['youthful', 'sport']],
+  slimaviator: ['metal', ['classic', 'minimal']],
+  retrooval: ['acetate', ['classic', 'fashion']],
+  sportywrap: ['acetate', ['sport', 'youthful']],
 };
 for (const f of FRAMES) [f.material, f.tags] = FRAME_META[f.id];
+
+// Mức độ ưa chuộng theo giới tính và độ tuổi (0 = hiếm, 3 = rất phổ biến).
+// Tổng hợp định tính từ khảo sát cửa hàng kính Hà Nội, báo cáo xu hướng 2026 và khảo sát All About Vision
+// (xem SOURCES) — không phải số liệu doanh số.
+export const GENDERS = { female: 'Nữ', male: 'Nam' };
+export const AGE_GROUPS = { kid: 'Trẻ em (<13)', genz: 'Gen Z (13–24)', young: '25–39 tuổi', middle: '40–54 tuổi', senior: '55+ tuổi' };
+//                 [nữ, nam, trẻ em, genz, 25–39, 40–54, 55+]
+const POPULARITY = {
+  rectangle: [2, 3, 1, 2, 3, 3, 3],
+  square: [2, 3, 1, 2, 3, 2, 1],
+  wayfarer: [2, 3, 1, 2, 3, 2, 1],
+  round: [2, 2, 2, 3, 2, 1, 1],
+  oval: [2, 2, 1, 1, 2, 3, 3],
+  cateye: [3, 0, 0, 2, 3, 2, 1],
+  aviator: [1, 3, 0, 1, 2, 3, 2],
+  browline: [1, 3, 0, 1, 3, 3, 2],
+  geometric: [2, 2, 0, 3, 2, 1, 0],
+  panto: [2, 2, 1, 3, 2, 1, 1],
+  dframe: [2, 2, 0, 2, 2, 1, 0],
+  oversized: [3, 1, 0, 3, 3, 1, 0],
+  rimless: [2, 2, 0, 0, 1, 3, 3],
+  semirimless: [1, 3, 0, 0, 2, 3, 3],
+  softsquare: [2, 2, 1, 3, 3, 2, 1],
+  octagon: [2, 2, 0, 3, 2, 1, 0],
+  butterfly: [3, 0, 0, 1, 2, 2, 1],
+  clubround: [1, 2, 0, 2, 2, 1, 0],
+  roundwire: [2, 2, 0, 3, 2, 1, 1],
+  navigator: [0, 3, 0, 1, 2, 3, 1],
+  metalrect: [1, 3, 0, 1, 2, 3, 3],
+  cateyemetal: [3, 0, 0, 2, 3, 2, 1],
+  oversizedround: [3, 1, 0, 3, 2, 1, 0],
+  invertedhalf: [1, 2, 0, 0, 1, 2, 2],
+  rimlessoval: [3, 1, 0, 0, 1, 3, 3],
+  flattop: [2, 2, 0, 2, 2, 1, 0],
+  pentagon: [3, 1, 0, 3, 2, 0, 0],
+  koreanclear: [3, 2, 1, 3, 3, 1, 0],
+  slimoval90s: [3, 1, 0, 3, 2, 1, 0],
+  narrowrect90s: [2, 2, 0, 3, 2, 0, 0],
+  oversizedrect: [3, 2, 0, 2, 3, 1, 0],
+  softcateye: [3, 0, 0, 1, 3, 3, 2],
+  chunkysquare: [2, 3, 0, 3, 2, 1, 0],
+  titaniumprogressive: [2, 3, 0, 0, 1, 3, 3],
+  kidsflex: [2, 2, 3, 0, 0, 0, 0],
+  slimaviator: [1, 3, 0, 2, 3, 2, 1],
+  retrooval: [2, 2, 0, 1, 3, 2, 2],
+  sportywrap: [1, 3, 2, 3, 1, 0, 0],
+};
+for (const f of FRAMES) {
+  const p = POPULARITY[f.id];
+  f.pop = { female: p[0], male: p[1], kid: p[2], genz: p[3], young: p[4], middle: p[5], senior: p[6] };
+}
+
+// Ghi chú xu hướng theo nhóm (hiển thị ở tab Kiến thức).
+export const TREND_NOTES = [
+  { group: 'Gen Z (13–24)', text: 'Ưa kiểu thập niên 90–2000: gọng kim loại mảnh, acetate mảnh; gọng hình học (ngũ giác, lục giác) — Gen Z chọn gọng hình học nhiều hơn ~6 lần thế hệ boomer; phong cách Hàn Quốc, nhựa trong suốt.' },
+  { group: '25–39 tuổi', text: 'Gọng trong suốt (millennial chọn nhiều gấp đôi Gen Z), bản to, oval retro, vuông; gọng công sở chữ nhật/browline.' },
+  { group: '40–54 tuổi', text: 'Kiểu cổ điển, thanh lịch: chữ nhật, browline, nửa viền, không viền; titan nhẹ; tròng đủ cao cho đa tròng.' },
+  { group: '55+ tuổi', text: 'Gọng nhẹ, bền (titan, TR90, bản lề lò xo), màu trầm (đen, nâu, xám, vàng ánh kim); không viền / nửa viền; kính lão, đa tròng.' },
+  { group: 'Trẻ em', text: 'Nhựa dẻo TR90/silicone, không vít, khó gãy; dáng tròn hoặc vuông bo; nhiều màu.' },
+  { group: 'Nữ', text: 'Mắt mèo và gọng nhựa được nữ tự chọn nhiều hơn; oval mảnh, tròn tối giản, chữ nhật bản to, cánh bướm.' },
+  { group: 'Nam', text: 'Nam chọn phi công và gọng kim loại nhiều hơn; chữ nhật, browline (được đánh giá chuyên nghiệp nhất), titan nửa viền, hình học, đồi mồi.' },
+  { group: 'Chung', text: 'Chữ nhật là lựa chọn số 1, vuông đứng sau sát nút; gần một nửa người được hỏi thích màu đen, xanh dương đứng thứ hai.' },
+];
 
 // tones: tông da hợp. kind: acetate | metal.
 export const FRAME_COLORS = [
@@ -288,6 +448,8 @@ export const FRAME_COLORS = [
   { id: 'rosegold', name: 'Vàng hồng', hex: '#c58f7b', tones: ['warm', 'neutral'], kind: 'metal' },
   { id: 'silver', name: 'Bạc', hex: '#b8bec7', tones: ['cool'], kind: 'metal' },
   { id: 'gunmetal', name: 'Xám kim loại', hex: '#4a4f57', tones: ['cool', 'neutral'], kind: 'metal' },
+  { id: 'forest', name: 'Xanh rêu đậm', hex: '#2f4a3a', tones: ['warm', 'neutral'], kind: 'acetate' },
+  { id: 'metalpink', name: 'Hồng kim loại', hex: '#d39aad', tones: ['cool', 'neutral'], kind: 'metal' },
 ];
 
 export const UNDERTONES = {
@@ -343,4 +505,14 @@ export const SOURCES = [
   { title: 'Foster Grant — Best frame color for skin tone', url: 'https://www.fostergrant.com/blogs/helpful-resources/best-frame-color-for-skin-tone' },
   { title: 'Google Research — MediaPipe Iris: iris ≈ 11.7 ± 0.5 mm làm thước đo', url: 'https://research.google/blog/mediapipe-iris-real-time-iris-tracking-depth-estimation/' },
   { title: 'Wikipedia — Pupillary distance', url: 'https://en.wikipedia.org/wiki/Pupillary_distance' },
+  { title: 'All About Vision — Perceptions of different glasses shapes (khảo sát 862 người, theo giới & thế hệ)', url: 'https://www.allaboutvision.com/eyewear/eyeglasses/styles/perceptions-of-different-glasses-shapes/' },
+  { title: 'VnEconomy — Thương hiệu thời trang coi kính mắt là “vùng đất” mới (Gen Z vs millennial)', url: 'https://vneconomy.vn/thuong-hieu-thoi-trang-coi-kinh-mat-la-vung-dat-moi.htm' },
+  { title: 'Tuổi Trẻ — 5 xu hướng kính mát chiếm sóng mùa hè 2026', url: 'https://tuoitre.vn/5-xu-huong-kinh-mat-chiem-song-mua-he-2026-20260509103847047.htm' },
+  { title: 'Jimmy Fairly — The eyewear shapes that will dominate 2026', url: 'https://www.jimmyfairly.com/blogs/revista/the-eyewear-shapes-that-will-dominate-2026' },
+  { title: 'BonLook — Men’s glasses frames currently trending', url: 'https://www.bonlook.com/blogs/blog/which-mens-glasses-frames-are-currently-trending' },
+  { title: 'AOP — Five eyewear trends from 100% Optical 2026', url: 'https://www.aop.org.uk/ot/100-percent-optical/2026/08/02/five-eyewear-trends-from-100-optical-2026' },
+  { title: 'Toplist — Địa chỉ bán gọng kính ở Hà Nội', url: 'https://toplist.vn/top-list/dia-chi-ban-gong-kinh-gia-re-va-chat-luong-o-ha-noi-25910.htm' },
+  { title: 'Mytour — Top cửa hàng kính mắt uy tín tại Hà Nội', url: 'https://mytour.vn/vi/blog/bai-viet/top-15-cua-hang-kinh-mat-uy-tin-tai-ha-noi-chat-luong-khong-the-bo-lo.html' },
+  { title: 'Toplist — Thương hiệu mắt kính được ưa chuộng nhất', url: 'https://toplist.vn/top-list/thuong-hieu-mat-kinh-duoc-ua-chuong-nhat-hien-nay-8263.htm' },
+  { title: 'Thế Giới Di Động — Chọn kính thời trang cho người lớn tuổi', url: 'https://www.thegioididong.com/hoi-dap/chon-mua-mat-kinh-thoi-trang-cho-nguoi-lon-tuoi-nguoi-1409132' },
 ];
