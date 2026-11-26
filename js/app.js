@@ -1,10 +1,10 @@
 import { FaceLandmarker, FilesetResolver } from 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/vision_bundle.mjs';
-import { FACE_SHAPES, FRAMES, FRAME_COLORS, UNDERTONES, EYE_COLOR_TIPS, SOURCES, SIZE_GUIDE, STYLE_TAGS, MATERIALS } from './knowledge.js?v=mwxsp2j5';
+import { FACE_SHAPES, FRAMES, FRAME_COLORS, UNDERTONES, EYE_COLOR_TIPS, SOURCES, SIZE_GUIDE, STYLE_TAGS, MATERIALS } from './knowledge.js?v=mwxsv9ua';
 import {
   measureFrame, poseFrom, aggregate, classifyShape, recommendSize, frameDims, fitChecks,
   scoreFrame, reasonsFor, analyzeColors,
-} from './analysis.js?v=mwxsp2j5';
-import { drawGlasses, drawTemples, drawThumb } from './render.js?v=mwxsp2j5';
+} from './analysis.js?v=mwxsv9ua';
+import { drawGlasses, drawTemples, drawThumb } from './render.js?v=mwxsv9ua';
 
 const WASM = 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm';
 const MODEL = 'https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task';
@@ -455,14 +455,13 @@ function drawScene(ctx, opts) {
   const dist3 = Math.hypot(R.x - L.x, R.y - L.y, R.z - L.z);
   const ux = (R.x - L.x) / dist2, uy = (R.y - L.y) / dist2;
   const sy = dist3 / m.pdNear;
-  // Gốc gọng = hình chiếu của sống mũi (điểm 6) lên đường nối hai đồng tử. Khi quay đầu, sống mũi nhô ra
-  // nên lệch khỏi trung điểm hai mắt; mỗi nửa gọng co giãn riêng để đồng tử vẫn đúng vị trí trong tròng.
+  // Gốc gọng = hình chiếu của sống mũi (điểm 6) lên đường nối hai đồng tử. Gọng nằm trước mắt ~1 cm,
+  // nên khi quay đầu nó trượt theo sống mũi chứ không méo; hai nửa giữ cùng tỷ lệ để hai tròng cân đối.
   const nose = g(6);
   const t = clamp((nose.x - L.x) * ux + (nose.y - L.y) * uy, dist2 * 0.25, dist2 * 0.75);
-  const ox = L.x + ux * t, oy = L.y + uy * t;
-  const half = m.pdNear / 2;
-  const sideT = (len) => ({ a: ux * len / half, b: uy * len / half, c: -uy * sy, d: ux * sy, e: ox, f: oy });
-  const T = { L: sideT(t), R: sideT(dist2 - t) };
+  const sx = dist2 / m.pdNear;
+  const M = { a: ux * sx, b: uy * sx, c: -uy * sy, d: ux * sy, e: L.x + ux * t, f: L.y + uy * t };
+  const T = { L: M, R: M };
 
   const frame = currentFrame(), color = currentColor();
   const size = state.analysis?.size || recommendSize(m);
