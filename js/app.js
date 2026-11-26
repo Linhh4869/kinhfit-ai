@@ -1,10 +1,10 @@
 import { FaceLandmarker, FilesetResolver } from 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/vision_bundle.mjs';
-import { FACE_SHAPES, FRAMES, FRAME_COLORS, UNDERTONES, EYE_COLOR_TIPS, SOURCES, SIZE_GUIDE, STYLE_TAGS, MATERIALS } from './knowledge.js?v=mwxsgrv7';
+import { FACE_SHAPES, FRAMES, FRAME_COLORS, UNDERTONES, EYE_COLOR_TIPS, SOURCES, SIZE_GUIDE, STYLE_TAGS, MATERIALS } from './knowledge.js?v=mwxsp2j5';
 import {
   measureFrame, poseFrom, aggregate, classifyShape, recommendSize, frameDims, fitChecks,
   scoreFrame, reasonsFor, analyzeColors,
-} from './analysis.js?v=mwxsgrv7';
-import { drawGlasses, drawTemples, drawThumb } from './render.js?v=mwxsgrv7';
+} from './analysis.js?v=mwxsp2j5';
+import { drawGlasses, drawTemples, drawThumb } from './render.js?v=mwxsp2j5';
 
 const WASM = 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm';
 const MODEL = 'https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task';
@@ -454,14 +454,21 @@ function drawScene(ctx, opts) {
   const dist2 = Math.hypot(R.x - L.x, R.y - L.y);
   const dist3 = Math.hypot(R.x - L.x, R.y - L.y, R.z - L.z);
   const ux = (R.x - L.x) / dist2, uy = (R.y - L.y) / dist2;
-  const sx = dist2 / m.pdNear, sy = dist3 / m.pdNear;
-  const T = { a: ux * sx, b: uy * sx, c: -uy * sy, d: ux * sy, e: (L.x + R.x) / 2, f: (L.y + R.y) / 2 };
+  const sy = dist3 / m.pdNear;
+  // Gốc gọng = hình chiếu của sống mũi (điểm 6) lên đường nối hai đồng tử. Khi quay đầu, sống mũi nhô ra
+  // nên lệch khỏi trung điểm hai mắt; mỗi nửa gọng co giãn riêng để đồng tử vẫn đúng vị trí trong tròng.
+  const nose = g(6);
+  const t = clamp((nose.x - L.x) * ux + (nose.y - L.y) * uy, dist2 * 0.25, dist2 * 0.75);
+  const ox = L.x + ux * t, oy = L.y + uy * t;
+  const half = m.pdNear / 2;
+  const sideT = (len) => ({ a: ux * len / half, b: uy * len / half, c: -uy * sy, d: ux * sy, e: ox, f: oy });
+  const T = { L: sideT(t), R: sideT(dist2 - t) };
 
   const frame = currentFrame(), color = currentColor();
   const size = state.analysis?.size || recommendSize(m);
   const dims = frameDims(frame, size, state.sizeMode);
   const hx = dims.A + dims.B / 2 + dims.endpiece, hy = dims.vOff - dims.H * 0.32 - 0.6;
-  const hinges = [-hx, hx].map((x) => ({ x: T.a * x + T.c * hy + T.e, y: T.b * x + T.d * hy + T.f }));
+  const hinges = [[-hx, T.L], [hx, T.R]].map(([x, M]) => ({ x: M.a * x + M.c * hy + M.e, y: M.b * x + M.d * hy + M.f }));
   const e1 = g(127), e2 = g(356);
   const ears = e1.x < e2.x ? [e1, e2] : [e2, e1];
   drawTemples(ctx, hinges, ears, color, sy);

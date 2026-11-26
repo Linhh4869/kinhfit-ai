@@ -85,21 +85,25 @@ const TINTS = {
   gradient: { fill: 'grad', glare: 0.18 },
 };
 
-// T: {a,b,c,d,e,f} ma trận mm → pixel. dims: {A,B,H,vOff,endpiece}.
+// T: {a,b,c,d,e,f} ma trận mm → pixel, hoặc {L, R}: mỗi nửa gọng một ma trận (chung gốc ở sống mũi
+// và chung trục dọc) để nửa phía xa camera co lại khi quay đầu. dims: {A,B,H,vOff,endpiece}.
 // Trả về vị trí bản lề (pixel) để vẽ càng kính.
 export function drawGlasses(ctx, T, frame, color, dims, tint = 'clear') {
   const { A: w, B, H: h, vOff: cy, endpiece } = dims;
-  const sides = [{ cx: -(w / 2 + B / 2), o: -1 }, { cx: w / 2 + B / 2, o: 1 }];
+  const TL = T.L || T, TR = T.R || T;
+  const sides = [{ cx: -(w / 2 + B / 2), o: -1, T: TL }, { cx: w / 2 + B / 2, o: 1, T: TR }];
+  const use = (t) => ctx.setTransform(t.a, t.b, t.c, t.d, t.e, t.f);
   const shape = frame.shape;
   const hinges = [];
 
   ctx.save();
-  ctx.setTransform(T.a, T.b, T.c, T.d, T.e, T.f);
+  use(TL);
   ctx.lineJoin = 'round'; ctx.lineCap = 'round';
 
   // Tròng kính
   const tt = TINTS[tint] || TINTS.clear;
   for (const s of sides) {
+    use(s.T);
     lensPath(ctx, shape, s.cx, cy, w, h, s.o);
     if (tt.fill === 'grad') {
       const g = ctx.createLinearGradient(0, cy - h / 2, 0, cy + h / 2);
@@ -125,6 +129,7 @@ export function drawGlasses(ctx, T, frame, color, dims, tint = 'clear') {
 
   // Viền
   for (const s of sides) {
+    use(s.T);
     lensPath(ctx, shape, s.cx, cy, w, h, s.o);
     if (frame.rim === 'full') {
       ctx.strokeStyle = main; ctx.lineWidth = thick; ctx.stroke();
@@ -163,11 +168,19 @@ export function drawGlasses(ctx, T, frame, color, dims, tint = 'clear') {
     ctx.strokeStyle = frame.rim === 'full' || frame.rim === 'browline' || frame.rim === 'semi' ? main : metal;
     ctx.lineWidth = frame.rim === 'full' ? thick * 1.15 : Math.max(thick, 1.4);
     ctx.stroke();
-    hinges.push(applyT(T, hx, ey - 0.6));
+    hinges.push(applyT(s.T, hx, ey - 0.6));
   }
 
-  // Cầu mũi
+  // Cầu mũi: vẽ từng nửa bằng ma trận của nửa đó, cắt tại x = 0 để hai nửa nối liền.
   const innerX = B / 2;
+  for (const s of sides) {
+    ctx.save();
+    use(s.T);
+    ctx.beginPath(); ctx.rect(s.o < 0 ? -w * 2 : 0, cy - h * 2, w * 2, h * 4); ctx.clip();
+    drawBridge();
+    ctx.restore();
+  }
+  function drawBridge() {
   if (frame.bridge === 'double') {
     ctx.strokeStyle = metal; ctx.lineWidth = thick;
     ctx.beginPath(); ctx.moveTo(-innerX - w * 0.18, cy - h * 0.46); ctx.quadraticCurveTo(0, cy - h * 0.5, innerX + w * 0.18, cy - h * 0.46); ctx.stroke();
@@ -183,11 +196,13 @@ export function drawGlasses(ctx, T, frame, color, dims, tint = 'clear') {
     ctx.strokeStyle = main; ctx.lineWidth = thick * 1.25;
     ctx.beginPath(); ctx.moveTo(-innerX - 1, cy - h * 0.25); ctx.quadraticCurveTo(0, cy - h * 0.46, innerX + 1, cy - h * 0.25); ctx.stroke();
   }
+  }
 
   // Đệm mũi cho gọng kim loại / không viền
   if (frame.rim !== 'full') {
     ctx.shadowColor = 'transparent';
-    for (const o of [-1, 1]) {
+    for (const { o, T: t } of sides) {
+      use(t);
       const px = o * (innerX + 1.2), py = cy + h * 0.12;
       ctx.strokeStyle = metal; ctx.lineWidth = 0.6;
       ctx.beginPath(); ctx.moveTo(o * (innerX + 0.5), cy - h * 0.25); ctx.quadraticCurveTo(o * innerX * 0.7, py - 3, px, py - 2.5); ctx.stroke();
@@ -197,6 +212,7 @@ export function drawGlasses(ctx, T, frame, color, dims, tint = 'clear') {
   }
   if (frame.rim === 'rimless') {
     for (const s of sides) for (const x of [s.cx - s.o * (w / 2 - 2), s.cx + s.o * (w / 2 - 2)]) {
+      use(s.T);
       ctx.beginPath(); ctx.arc(x, cy - h * 0.32, 0.9, 0, Math.PI * 2); ctx.fillStyle = metal; ctx.fill();
     }
   }
