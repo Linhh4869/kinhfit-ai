@@ -20,6 +20,10 @@ Cần Node.js (không cần cài thêm thư viện).
 
 Lần đầu cần Internet để tải mô hình AI (~4 MB) từ CDN; ảnh camera **không** gửi đi đâu.
 
+## Cập nhật bản online (GitHub Pages)
+
+GitHub Pages cho trình duyệt giữ file cũ tới 10 phút. Trước mỗi lần commit, chạy `node bump-version.js` để đổi số phiên bản `?v=…` trong đường dẫn — người dùng chỉ cần tải lại trang là nhận bản mới.
+
 ## Cấu trúc
 
 - `js/knowledge.js` — tri thức: dáng mặt, 26 kiểu gọng + ma trận độ hợp, màu, cỡ, nguồn tham khảo.
