@@ -87,13 +87,12 @@ for (const r of raw) {
   out.push({
     code: displayCode(sku), slug: fullSlug, family,
     tags: arr(shapeTags), materials: arr(mats), gender: arr(gender), size: arr(size)[0] || '',
-    price, A, B, T, best, isNew, col: col || '', colors: variants,
+    A, B, T, best, isNew, col: col || '', colors: variants,
   });
 }
 
 const header = `// Tự sinh bởi tools/build-catalog.js — KHÔNG sửa tay.
-// Nguồn: danh mục gọng kính tại https://kinhmatanna.com/vi/products/gong-kinh (thu thập 27/11/2026).
-// Chỉ gồm thông tin sản phẩm (mã, dáng, chất liệu, kích thước, màu, giá); không có hình ảnh hay mô tả của cửa hàng.
+// Chỉ gồm thông số gọng (mã, dáng, chất liệu, kích thước, màu).
 `;
 fs.writeFileSync(path.join(root, 'js/catalog-data.js'), header + 'export const ANNA_PRODUCTS = ' + JSON.stringify(out) + ';\n');
 console.log('products:', out.length, 'colors:', out.reduce((s, p) => s + p.colors.length, 0));

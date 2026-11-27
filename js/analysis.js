@@ -1,6 +1,6 @@
 // Đo đạc khuôn mặt từ 478 điểm MediaPipe Face Landmarker, phân loại khuôn mặt,
 // tính kích thước gọng và chấm điểm từng kiểu gọng.
-import { FACE_SHAPES, SHAPE_KEYS, SIZE_GUIDE } from './knowledge.js?v=mwxubh1n';
+import { FACE_SHAPES, SHAPE_KEYS, SIZE_GUIDE } from './knowledge.js?v=mwy9yiwp';
 
 export const IRIS_MM = 11.7; // đường kính mống mắt trung bình (±0.5 mm)
 const CAMERA_HFOV_DEG = 60;   // góc nhìn ngang ước tính của webcam laptop

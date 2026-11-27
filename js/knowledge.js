@@ -47,8 +47,8 @@ export const FACE_SHAPES = {
 
 export const SHAPE_KEYS = Object.keys(FACE_SHAPES);
 
-// Danh mục gọng: sản phẩm thật của Kính mắt Anna (xem catalog.js).
-export { FRAMES, FAMILIES, MATERIALS, GENDERS, COLLECTIONS, BUDGETS, CATALOG_SOURCE } from './catalog.js?v=mwxubh1n';
+// Danh mục gọng (xem catalog.js).
+export { FRAMES, FAMILIES, MATERIALS, GENDERS, COLLECTIONS } from './catalog.js?v=mwy9yiwp';
 
 // Ghi chú xu hướng theo nhóm (hiển thị ở tab Kiến thức).
 export const TREND_NOTES = [
@@ -119,7 +119,6 @@ export const SIZE_GUIDE = {
 };
 
 export const SOURCES = [
-  { title: 'Kính mắt Anna — danh mục gọng kính (nguồn dữ liệu gọng của ứng dụng)', url: 'https://kinhmatanna.com/vi/products/gong-kinh' },
   { title: 'Warby Parker — Glasses for different face shapes', url: 'https://www.warbyparker.com/learn/glasses-for-different-face-shapes' },
   { title: 'Warby Parker — Eyeglasses measurements', url: 'https://www.warbyparker.com/learn/eyeglasses-measurements' },
   { title: 'Warby Parker — Frame color guide', url: 'https://www.warbyparker.com/learn/frame-color-guide-eyeglasses-find-your-best-shade' },

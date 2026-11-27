@@ -1,9 +1,7 @@
-// Danh mục gọng: sản phẩm thật từ kinhmatanna.com (catalog-data.js) + quy tắc dựng hình và độ hợp dáng mặt.
-import { ANNA_PRODUCTS } from './catalog-data.js?v=mwxubh1n';
+// Danh mục gọng (catalog-data.js) + quy tắc dựng hình và độ hợp dáng mặt.
+import { ANNA_PRODUCTS } from './catalog-data.js?v=mwy9yiwp';
 
-export const CATALOG_SOURCE = { name: 'Kính mắt Anna', url: 'https://kinhmatanna.com/vi/products/gong-kinh', date: '27/11/2026' };
-
-// Dáng gọng theo cách phân loại của Anna. compat: điểm hợp từng dáng mặt (tổng hợp từ các hướng dẫn chọn kính).
+// Dáng gọng. compat: điểm hợp từng dáng mặt (tổng hợp từ các hướng dẫn chọn kính).
 export const FAMILIES = {
   oval: {
     name: 'Oval', shape: 'oval', aspect: 0.78, angular: 0.1, topHeavy: 0,
@@ -40,7 +38,6 @@ export const FAMILIES = {
 export const MATERIALS = { titan: 'Titan', nhua: 'Nhựa', 'kim-loai': 'Kim loại', 'nhua-kim-loai': 'Nhựa pha kim loại' };
 export const GENDERS = { nam: 'Nam', nu: 'Nữ' };
 export const COLLECTIONS = { 'tet-an-chill': 'Tết An-Chill', 'the-titan': 'The Titan', 'keo-ly': 'Keo Lỳ', 'keo-ly-elite': 'Keo Lỳ Elite', 'alter-ego': 'Alter Ego' };
-export const BUDGETS = { low: ['Dưới 600k', 0, 600000], mid: ['600k – 1 triệu', 600000, 1000000], high: ['Trên 1 triệu', 1000000, Infinity] };
 
 const WARM = ['nâu', 'vàng', 'đồi mồi', 'rêu', 'sữa', 'đỏ', 'trà', 'vân'];
 const COOL = ['ghi', 'bạc', 'tím', 'xanh', 'hồng', 'trắng'];
@@ -61,8 +58,6 @@ function primaryMaterial(m) {
   if (has('kim-loai')) return 'kim-loai';
   return 'nhua-kim-loai';
 }
-
-const fmtPrice = (v) => v.toLocaleString('vi-VN') + '₫';
 
 function buildFrame(p) {
   const fam = FAMILIES[p.family] || FAMILIES.oval;
@@ -102,9 +97,9 @@ function buildFrame(p) {
     shape, aspect: fam.aspect, rim, thick, bridge, widthScale: 1,
     traits: { angular: fam.angular, topHeavy: browline ? 1 : rimless ? -0.2 : fam.topHeavy },
     compat, material, materials: p.materials, tags: p.tags,
-    gender: p.gender, size: p.size, price: p.price, priceText: fmtPrice(p.price),
+    gender: p.gender, size: p.size,
     A, B, temple: T, sizeEstimated: est, best: !!p.best, isNew: !!p.isNew, collection: p.col,
-    colors, defaultColor: '0', url: `https://kinhmatanna.com/vi/product/${p.slug}`,
+    colors, defaultColor: '0',
   };
 }
 
